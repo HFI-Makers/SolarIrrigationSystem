@@ -12,3 +12,6 @@ A solar irrigation system based on Arduino Nano Atmega328P. Built per request of
 Soil humidity sensors connect to Analog pin 0~3
 LED D5
 SD card reader use SPI pins for Arduino Nano (or the equivelant for other boards)
+
+## Models
+The shells of the sensors and control chip were built via OnShape
