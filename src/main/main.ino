@@ -1,55 +1,68 @@
 struct Plant
 {
-    int sensor1;
-    int sensor2;
+    int sensor1, sensor2;
     int pump;
     bool isOn;
-} controllers[3];
+} controller[3];
+
+int lightTimer = 0;
 
 void setup()
 {
-    for (int i = 1; i < 6; i += 2)
+    for (int i = 0; i < 3; i++)
     {
-        controllers[i].sensor1 = i;
-        controllers[i].sensor2 = i + 1;
-        controllers[i].pump = i + 2;
-        pinMode(i, OUTPUT);
+        controller[i].sensor1 = 2 * i + 1;
+        controller[i].sensor2 = 2 * i + 2;
+        controller[i].pump = 2 * i + 2;
+        pinMode(2 * i + 2, OUTPUT);
     }
     Serial.begin(9600);
 }
 
 void loop()
 {
-    if (analogRead(7) > 1020)
-        digitalWrite(10, HIGH);
-    else
-        digitalWrite(10, LOW);
-
-    for (int i = 0; i < 3; i++)
+    if (lightTimer == 10 * 60 * 2)
     {
-        if (analogRead(controllers[i].sensor1) >= 800.0 || analogRead(controllers[i].sensor2) >= 800.0)
+        int readings = 0;
+        for (int i = 0; i < 10; i++)
         {
-            controllers[i].isOn = true;
+            readings += analogRead(7);
+            delay(100);
         }
+        char *str;
+        sprintf(str, "Brightness: %f", readings / 10.0);
+        Serial.print(str);
+        if ((double)readings / 10.0 >= 1020)
+            digitalWrite(10, LOW);
+        else
+            digitalWrite(10, HIGH);
+    }
 
-        if (analogRead(controllers[i].sensor1) <= 400.0 || analogRead(controllers[i].sensor2) <= 400.0)
-        {
-            controllers[i].isOn = false;
-        }
+    for (int i = 0; i <= 2; i++)
+    {
+        if (analogRead(controller[i].sensor1) > 900 || analogRead(controller[i].sensor2) > 900)
+            controller[i].isOn = true;
 
-        if (controllers[i].isOn = true)
-        {
-            digitalWrite(controllers[i].pump, HIGH);
-        }
-        Serial.print(i);
-        Serial.print("1: ");
-        Serial.print(analogRead(controllers[i].sensor1));
+        if (analogRead(controller[i].sensor1) < 700 || analogRead(controller[i].sensor2) < 700)
+            controller[i].isOn = false;
+
+        if (controller[i].isOn)
+            digitalWrite(controller[i].pump, LOW);
+        else
+            digitalWrite(controller[i].pump, HIGH);
+    }
+
+    for (int i = 0; i <= 2; i++)
+    {
+        Serial.print(analogRead(controller[i].sensor1));
         Serial.print(" ");
-        Serial.print(i);
-        Serial.print("2: ");
-        Serial.print(analogRead(controllers[i].sensor2));
+        Serial.print(analogRead(controller[i].sensor2));
+        Serial.print(" ");
+        Serial.print(controller[i].isOn);
         Serial.print(" ");
     }
     Serial.println();
+
+    lightTimer++;
     delay(500);
 }
